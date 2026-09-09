@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kabaddi Team Manager</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#eef5fa;color:#10243a}
+header{background:#062d4d;color:white;padding:16px 5%;display:flex;align-items:center;justify-content:space-between;gap:20px;position:sticky;top:0;z-index:10}
+.logo{font-size:25px;font-weight:900;letter-spacing:.5px}.logo span{color:#ff8a00}
+nav button{border:0;background:transparent;color:white;padding:12px 18px;font-weight:700;cursor:pointer;border-radius:8px}nav button.active,nav button:hover{background:#ff8a00}
+.hero{background:linear-gradient(110deg,#07395d,#061e35 60%,#ff7b00);color:white;padding:55px 7%;min-height:230px;display:flex;align-items:center;justify-content:space-between}
+.hero h1{font-size:48px;margin:0 0 8px;text-transform:uppercase}.hero p{font-size:18px;letter-spacing:2px}.hero-badge{font-size:70px}
+.container{max-width:1250px;margin:auto;padding:25px 18px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:15px;margin-top:-38px;position:relative}
+.stat{background:white;border-radius:14px;padding:20px;text-align:center;box-shadow:0 8px 22px #17344b22}.stat b{font-size:30px;display:block;color:#07395d}.stat span{font-weight:700}
+.card{background:white;border-radius:14px;margin-top:22px;box-shadow:0 6px 20px #17344b18;overflow:hidden}.title{background:#07395d;color:white;padding:16px 20px;font-size:20px;font-weight:800}
+.form{display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:12px;padding:20px}.form input,.form select,.search input{width:100%;padding:13px;border:1px solid #ccd8e2;border-radius:8px;font-size:15px}.btn{border:0;border-radius:8px;padding:13px 18px;font-weight:800;cursor:pointer}.add{background:#16a05d;color:white}.orange{background:#ff8a00;color:white}.danger{background:#e63946;color:white}.blue{background:#1377d5;color:white}
+.toolbar{display:flex;gap:10px;justify-content:space-between;align-items:center;padding:14px 18px;background:#ff8a00}.search{display:flex;gap:8px;flex:1;max-width:430px}.actions{display:flex;gap:8px}
+table{width:100%;border-collapse:collapse}th,td{padding:13px 14px;border-bottom:1px solid #e2e9ef;text-align:left}th{background:#07395d;color:white}tr:hover td{background:#f7fbfe}.row-actions{display:flex;gap:7px}
+footer{margin-top:35px;background:#062d4d;color:white;text-align:center;padding:30px}
+.modal{display:none;position:fixed;inset:0;background:#0008;align-items:center;justify-content:center;z-index:20}.modal-box{background:white;border-radius:14px;padding:25px;width:min(420px,92%)}.modal-box h2{margin-top:0}.modal-box input,.modal-box select{width:100%;padding:12px;margin:7px 0 12px;border:1px solid #ccd8e2;border-radius:8px}
+@media(max-width:800px){.stats{grid-template-columns:repeat(2,1fr)}.form{grid-template-columns:1fr}.hero h1{font-size:34px}.hero-badge{font-size:45px}.toolbar{flex-direction:column;align-items:stretch}.actions{flex-wrap:wrap}.search{max-width:none}table{font-size:13px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">🏆 <span>KABADDI</span> TEAM MANAGER</div>
+  <nav>
+    <button class="active">Home</button><button onclick="focusPlayers()">Players</button><button onclick="alert('Team Manager\\nManage player names, jersey numbers and sizes.')">Team</button>
+  </nav>
+</header>
+
+<section class="hero">
+  <div><h1>Kabaddi Team Manager</h1><p>ONE TEAM &nbsp;|&nbsp; ONE SPIRIT &nbsp;|&nbsp; ONE GOAL</p></div>
+  <div class="hero-badge">🤼‍♂️</div>
+</section>
+
+<main class="container">
+  <section class="stats">
+    <div class="stat"><b id="total">0</b><span>Total Players</span></div>
+    <div class="stat"><b id="jerseys">0</b><span>Jerseys Issued</span></div>
+    <div class="stat"><b id="sizes">0</b><span>Sizes Used</span></div>
+    <div class="stat"><b id="ready">0%</b><span>Team Ready</span></div>
+  </section>
+
+  <section class="card">
+    <div class="title">👤 Add New Player</div>
+    <form class="form" id="playerForm">
+      <input id="name" placeholder="Player Name" required>
+      <input id="jersey" type="number" min="1" placeholder="Jersey Number" required>
+      <select id="size" required><option value="">Select Size</option><option>S</option><option>M</option><option>L</option><option>XL</option><option>XXL</option></select>
+      <button class="btn add" type="submit">＋ Add Player</button>
+    </form>
+  </section>
+
+  <section class="card" id="players">
+    <div class="toolbar">
+      <strong style="font-size:20px">☷ Player List</strong>
+      <div class="search"><input id="search" placeholder="Search by name or jersey number"><button class="btn blue" onclick="render()">Search</button></div>
+      <div class="actions"><button class="btn blue" onclick="exportCSV()">Export Excel</button><button class="btn" style="background:#e63946;color:white" onclick="window.print()">🖨 Print</button></div>
+    </div>
+    <div style="overflow:auto">
+      <table><thead><tr><th>#</th><th>Player Name</th><th>Jersey Number</th><th>Size</th><th>Actions</th></tr></thead><tbody id="list"></tbody></table>
+    </div>
+  </section>
+</main>
+
+<footer><div style="font-size:24px;font-weight:900">KABADDI • TEAMWORK • DISCIPLINE • RESPECT</div><p>© 2026 Kabaddi Team Manager</p></footer>
+
+<div class="modal" id="modal"><div class="modal-box">
+  <h2>Edit Player</h2><input id="editName"><input id="editJersey" type="number"><select id="editSize"><option>S</option><option>M</option><option>L</option><option>XL</option><option>XXL</option></select>
+  <button class="btn add" onclick="saveEdit()">Save Changes</button> <button class="btn" onclick="closeModal()">Cancel</button>
+</div></div>
+
+<script>
+let players=JSON.parse(localStorage.getItem('kabaddiPlayers')||'[]'), editIndex=-1;
+const save=()=>localStorage.setItem('kabaddiPlayers',JSON.stringify(players));
+function render(){
+ const q=document.getElementById('search').value.toLowerCase();
+ const rows=players.map((p,i)=>({p,i})).filter(x=>x.p.name.toLowerCase().includes(q)||String(x.p.jersey).includes(q));
+ document.getElementById('list').innerHTML=rows.length?rows.map((x,n)=>`<tr><td>${n+1}</td><td><b>${esc(x.p.name)}</b></td><td>${x.p.jersey}</td><td>${x.p.size}</td><td><div class="row-actions"><button class="btn blue" onclick="edit(${x.i})">✎</button><button class="btn danger" onclick="removePlayer(${x.i})">🗑</button></div></td></tr>`).join(''):'<tr><td colspan="5" style="text-align:center;padding:35px">No players added yet.</td></tr>';
+ document.getElementById('total').textContent=players.length;document.getElementById('jerseys').textContent=players.length;document.getElementById('sizes').textContent=new Set(players.map(p=>p.size)).size;document.getElementById('ready').textContent=players.length?'100%':'0%';
+}
+document.getElementById('playerForm').onsubmit=e=>{e.preventDefault();let p={name:name.value.trim(),jersey:jersey.value,size:size.value};if(players.some(x=>x.jersey==p.jersey)){alert('This jersey number is already used.');return}players.push(p);save();e.target.reset();render()};
+function removePlayer(i){if(confirm('Delete this player?')){players.splice(i,1);save();render()}}
+function edit(i){editIndex=i;editName.value=players[i].name;editJersey.value=players[i].jersey;editSize.value=players[i].size;modal.style.display='flex'}
+function saveEdit(){players[editIndex]={name:editName.value.trim(),jersey:editJersey.value,size:editSize.value};save();closeModal();render()}
+function closeModal(){modal.style.display='none'}
+function focusPlayers(){document.getElementById('players').scrollIntoView({behavior:'smooth'})}
+function exportCSV(){let csv='Player Name,Jersey Number,Size\\n'+players.map(p=>`"${p.name.replaceAll('"','""')}",${p.jersey},${p.size}`).join('\\n');let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='kabaddi_players.csv';a.click()}
+function esc(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+render();
+</script>
+</body>
+</html>
