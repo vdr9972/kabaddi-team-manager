@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kabaddi Team Manager - Admin</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#eef5fa;color:#10243a}
+header{background:#062d4d;color:white;padding:16px 5%;display:flex;justify-content:space-between;align-items:center}
+.logo{font-size:24px;font-weight:900}.logo span{color:#ff8a00}
+.btn{border:0;border-radius:8px;padding:11px 16px;font-weight:800;cursor:pointer}.orange{background:#ff8a00;color:white}.blue{background:#1377d5;color:white}.danger{background:#e63946;color:white}
+.container{max-width:1100px;margin:auto;padding:25px 18px}.hero{background:linear-gradient(110deg,#07395d,#061e35 65%,#ff7b00);color:white;padding:32px;border-radius:14px}.hero h1{margin:0;font-size:36px}.hero p{margin-bottom:0}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;margin:20px 0}.stat{background:white;padding:20px;text-align:center;border-radius:12px;box-shadow:0 5px 18px #17344b18}.stat b{display:block;font-size:30px;color:#07395d}
+.card{background:white;border-radius:14px;overflow:hidden;box-shadow:0 5px 18px #17344b18}.toolbar{padding:15px;background:#ff8a00;display:flex;gap:10px;align-items:center}.toolbar input{flex:1;padding:12px;border:0;border-radius:8px}
+table{width:100%;border-collapse:collapse}th,td{padding:14px;border-bottom:1px solid #e2e9ef;text-align:left}th{background:#07395d;color:white}
+footer{margin-top:30px;background:#062d4d;color:white;text-align:center;padding:25px}
+@media(max-width:700px){.cards{grid-template-columns:1fr}.toolbar{flex-wrap:wrap}.toolbar input{min-width:100%}}
+</style>
+</head>
+<body>
+<header><div class="logo">🏆 <span>KABADDI</span> TEAM MANAGER — ADMIN</div><button class="btn orange" onclick="location.href='index.html'">← Player Page</button></header>
+<main class="container">
+<section class="hero"><h1>Admin Player List</h1><p>All players added on this device/browser are shown here.</p></section>
+<section class="cards">
+<div class="stat"><b id="total">0</b>Total Players</div>
+<div class="stat"><b id="jerseys">0</b>Jerseys Issued</div>
+<div class="stat"><b id="sizes">0</b>Sizes Used</div>
+</section>
+<section class="card">
+<div class="toolbar">
+<input id="search" placeholder="Search player or jersey number" oninput="render()">
+<button class="btn blue" onclick="exportCSV()">Export CSV</button>
+<button class="btn" style="background:#fff" onclick="window.print()">🖨 Print</button>
+<button class="btn danger" onclick="clearAll()">Clear All</button>
+</div>
+<div style="overflow:auto"><table><thead><tr><th>#</th><th>Player Name</th><th>Jersey Number</th><th>Size</th><th>Added</th></tr></thead><tbody id="list"></tbody></table></div>
+</section>
+</main>
+<footer>KABADDI • TEAMWORK • DISCIPLINE • RESPECT</footer>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+import { getFirestore, collection, getDocs, query, orderBy, onSnapshot, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+import { firebaseConfig } from "./firebase-config.js";
+const app=initializeApp(firebaseConfig), db=getFirestore(app), playersRef=collection(db,"kabaddiPlayers");
+let players=[];
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+async function load(){
+ const snap=await getDocs(query(playersRef,orderBy("createdAt","asc")));
+ players=snap.docs.map(d=>({id:d.id,...d.data()})); render();
+}
+function render(){
+ const q=document.getElementById('search').value.toLowerCase();
+ const rows=players.filter(p=>String(p.name).toLowerCase().includes(q)||String(p.jersey).includes(q));
+ document.getElementById('list').innerHTML=rows.length?rows.map((p,i)=>`<tr><td>${i+1}</td><td><b>${esc(p.name)}</b></td><td>${esc(p.jersey)}</td><td>${esc(p.size)}</td><td>${p.createdAt?new Date(p.createdAt).toLocaleString():'-'}</td></tr>`).join(''):'<tr><td colspan="5" style="text-align:center;padding:35px">No players added yet.</td></tr>';
+ document.getElementById('total').textContent=players.length;document.getElementById('jerseys').textContent=players.length;document.getElementById('sizes').textContent=new Set(players.map(p=>p.size)).size;
+}
+window.exportCSV=()=>{let csv='Player Name,Jersey Number,Size,Added\n'+players.map(p=>`"${String(p.name).replaceAll('"','""')}",${p.jersey},${p.size},"${p.createdAt?new Date(p.createdAt).toLocaleString():''}"`).join('\n');let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='kabaddi_admin_players.csv';a.click()};
+window.clearAll=async()=>{if(confirm('Delete ALL players?')){for(const p of players)await deleteDoc(doc(db,'kabaddiPlayers',p.id));await load();}};
+load();
+</script>
+</body>
+</html>

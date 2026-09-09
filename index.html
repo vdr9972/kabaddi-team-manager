@@ -73,59 +73,49 @@ footer{margin-top:35px;background:#062d4d;color:white;text-align:center;padding:
   <button class="btn add" onclick="saveEdit()">Save Changes</button> <button class="btn" onclick="closeModal()">Cancel</button>
 </div></div>
 
-<script>
-let players=JSON.parse(localStorage.getItem('kabaddiPlayers')||'[]'), editIndex=-1;
-const save=()=>localStorage.setItem('kabaddiPlayers',JSON.stringify(players));
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs, query, orderBy, onSnapshot, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+import { firebaseConfig } from "./firebase-config.js";
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const playersRef = collection(db, "kabaddiPlayers");
+let players = [];
+let editIndex = -1;
+
+async function loadPlayers() {
+  const snap = await getDocs(query(playersRef, orderBy("createdAt", "asc")));
+  players = snap.docs.map(d => ({ id:d.id, ...d.data() }));
+  render();
+}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function render(){
  const q=document.getElementById('search').value.toLowerCase();
- const rows=players.map((p,i)=>({p,i})).filter(x=>x.p.name.toLowerCase().includes(q)||String(x.p.jersey).includes(q));
- document.getElementById('list').innerHTML=rows.length?rows.map((x,n)=>`<tr><td>${n+1}</td><td><b>${esc(x.p.name)}</b></td><td>${x.p.jersey}</td><td>${x.p.size}</td><td><div class="row-actions"><button class="btn blue" onclick="edit(${x.i})">✎</button><button class="btn danger" onclick="removePlayer(${x.i})">🗑</button></div></td></tr>`).join(''):'<tr><td colspan="5" style="text-align:center;padding:35px">No players added yet.</td></tr>';
- document.getElementById('total').textContent=players.length;document.getElementById('jerseys').textContent=players.length;document.getElementById('sizes').textContent=new Set(players.map(p=>p.size)).size;document.getElementById('ready').textContent=players.length?'100%':'0%';
+ const rows=players.filter(p=>String(p.name).toLowerCase().includes(q)||String(p.jersey).includes(q));
+ document.getElementById('list').innerHTML=rows.length?rows.map((p,n)=>`<tr><td>${n+1}</td><td><b>${esc(p.name)}</b></td><td>${esc(p.jersey)}</td><td>${esc(p.size)}</td><td><div class="row-actions"><button class="btn blue" onclick="window.editPlayer('${p.id}')">✎</button><button class="btn danger" onclick="window.removePlayer('${p.id}')">🗑</button></div></td></tr>`).join(''):'<tr><td colspan="5" style="text-align:center;padding:35px">No players added yet.</td></tr>';
+ document.getElementById('total').textContent=players.length;
+ document.getElementById('jerseys').textContent=players.length;
+ document.getElementById('sizes').textContent=new Set(players.map(p=>p.size)).size;
+ document.getElementById('ready').textContent=players.length?'100%':'0%';
 }
-document.getElementById('playerForm').addEventListener('submit', function(e) {
-  e.preventDefault();
-
-  const nameInput = document.getElementById('name');
-  const jerseyInput = document.getElementById('jersey');
-  const sizeInput = document.getElementById('size');
-
-  const playerName = nameInput.value.trim();
-  const jerseyNumber = jerseyInput.value.trim();
-  const playerSize = sizeInput.value.trim();
-
-  if (playerName === '' || jerseyNumber === '' || playerSize === '') {
-    alert('Please enter Player Name, Jersey Number and Size.');
-    return;
-  }
-
-  const duplicate = players.some(function(player) {
-    return String(player.jersey) === String(jerseyNumber);
-  });
-
-  if (duplicate) {
-    alert('This jersey number is already used.');
-    return;
-  }
-
-  players.push({
-    name: playerName,
-    jersey: jerseyNumber,
-    size: playerSize
-  });
-
-  localStorage.setItem('kabaddiPlayers', JSON.stringify(players));
-  this.reset();
-  render();
-  alert(playerName + ' added successfully!');
+document.getElementById('playerForm').addEventListener('submit', async e=>{
+ e.preventDefault();
+ const playerName=document.getElementById('name').value.trim();
+ const jerseyNumber=document.getElementById('jersey').value.trim();
+ const playerSize=document.getElementById('size').value;
+ if(!playerName||!jerseyNumber||!playerSize){alert('Please enter Player Name, Jersey Number and Size.');return;}
+ if(players.some(p=>String(p.jersey)===String(jerseyNumber))){alert('This jersey number is already used.');return;}
+ try{
+   await addDoc(playersRef,{name:playerName,jersey:jerseyNumber,size:playerSize,createdAt:Date.now()});
+   e.target.reset(); await loadPlayers(); alert(playerName+' added successfully!');
+ }catch(err){alert('Database error. Please check Firebase setup.');console.error(err);}
 });
-function removePlayer(i){if(confirm('Delete this player?')){players.splice(i,1);save();render()}}
-function edit(i){editIndex=i;editName.value=players[i].name;editJersey.value=players[i].jersey;editSize.value=players[i].size;modal.style.display='flex'}
-function saveEdit(){players[editIndex]={name:editName.value.trim(),jersey:editJersey.value,size:editSize.value};save();closeModal();render()}
-function closeModal(){modal.style.display='none'}
-function focusPlayers(){document.getElementById('players').scrollIntoView({behavior:'smooth'})}
-function exportCSV(){let csv='Player Name,Jersey Number,Size\\n'+players.map(p=>`"${p.name.replaceAll('"','""')}",${p.jersey},${p.size}`).join('\\n');let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='kabaddi_players.csv';a.click()}
-function esc(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-render();
+window.removePlayer=async id=>{if(confirm('Delete this player?')){await deleteDoc(doc(db,'kabaddiPlayers',id));await loadPlayers();}};
+window.editPlayer=id=>{alert('Edit can be added after the shared database is connected.');};
+window.focusPlayers=()=>document.getElementById('players').scrollIntoView({behavior:'smooth'});
+window.exportCSV=()=>{let csv='Player Name,Jersey Number,Size\n'+players.map(p=>`"${String(p.name).replaceAll('"','""')}",${p.jersey},${p.size}`).join('\n');let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='kabaddi_players.csv';a.click()};
+loadPlayers();
 </script>
 </body>
 </html>
