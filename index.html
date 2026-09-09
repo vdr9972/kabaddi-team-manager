@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Kabaddi Team Manager</title>
+<title>Kabaddi Team Manager v2</title>
 <style>
 *{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#eef5fa;color:#10243a}
 header{background:#062d4d;color:white;padding:16px 5%;display:flex;align-items:center;justify-content:space-between;gap:20px;position:sticky;top:0;z-index:10}
@@ -82,7 +82,42 @@ function render(){
  document.getElementById('list').innerHTML=rows.length?rows.map((x,n)=>`<tr><td>${n+1}</td><td><b>${esc(x.p.name)}</b></td><td>${x.p.jersey}</td><td>${x.p.size}</td><td><div class="row-actions"><button class="btn blue" onclick="edit(${x.i})">✎</button><button class="btn danger" onclick="removePlayer(${x.i})">🗑</button></div></td></tr>`).join(''):'<tr><td colspan="5" style="text-align:center;padding:35px">No players added yet.</td></tr>';
  document.getElementById('total').textContent=players.length;document.getElementById('jerseys').textContent=players.length;document.getElementById('sizes').textContent=new Set(players.map(p=>p.size)).size;document.getElementById('ready').textContent=players.length?'100%':'0%';
 }
-document.getElementById('playerForm').onsubmit=e=>{e.preventDefault();let p={name:name.value.trim(),jersey:jersey.value,size:size.value};if(players.some(x=>x.jersey==p.jersey)){alert('This jersey number is already used.');return}players.push(p);save();e.target.reset();render()};
+document.getElementById('playerForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+
+  const nameInput = document.getElementById('name');
+  const jerseyInput = document.getElementById('jersey');
+  const sizeInput = document.getElementById('size');
+
+  const playerName = nameInput.value.trim();
+  const jerseyNumber = jerseyInput.value.trim();
+  const playerSize = sizeInput.value.trim();
+
+  if (playerName === '' || jerseyNumber === '' || playerSize === '') {
+    alert('Please enter Player Name, Jersey Number and Size.');
+    return;
+  }
+
+  const duplicate = players.some(function(player) {
+    return String(player.jersey) === String(jerseyNumber);
+  });
+
+  if (duplicate) {
+    alert('This jersey number is already used.');
+    return;
+  }
+
+  players.push({
+    name: playerName,
+    jersey: jerseyNumber,
+    size: playerSize
+  });
+
+  localStorage.setItem('kabaddiPlayers', JSON.stringify(players));
+  this.reset();
+  render();
+  alert(playerName + ' added successfully!');
+});
 function removePlayer(i){if(confirm('Delete this player?')){players.splice(i,1);save();render()}}
 function edit(i){editIndex=i;editName.value=players[i].name;editJersey.value=players[i].jersey;editSize.value=players[i].size;modal.style.display='flex'}
 function saveEdit(){players[editIndex]={name:editName.value.trim(),jersey:editJersey.value,size:editSize.value};save();closeModal();render()}
