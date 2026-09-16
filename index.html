@@ -1,121 +1,100 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="kn">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Kabaddi Team Manager v2</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kabaddi Tournament Live</title>
 <style>
-*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#eef5fa;color:#10243a}
-header{background:#062d4d;color:white;padding:16px 5%;display:flex;align-items:center;justify-content:space-between;gap:20px;position:sticky;top:0;z-index:10}
-.logo{font-size:25px;font-weight:900;letter-spacing:.5px}.logo span{color:#ff8a00}
-nav button{border:0;background:transparent;color:white;padding:12px 18px;font-weight:700;cursor:pointer;border-radius:8px}nav button.active,nav button:hover{background:#ff8a00}
-.hero{background:linear-gradient(110deg,#07395d,#061e35 60%,#ff7b00);color:white;padding:55px 7%;min-height:230px;display:flex;align-items:center;justify-content:space-between}
-.hero h1{font-size:48px;margin:0 0 8px;text-transform:uppercase}.hero p{font-size:18px;letter-spacing:2px}.hero-badge{font-size:70px}
-.container{max-width:1250px;margin:auto;padding:25px 18px}
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:15px;margin-top:-38px;position:relative}
-.stat{background:white;border-radius:14px;padding:20px;text-align:center;box-shadow:0 8px 22px #17344b22}.stat b{font-size:30px;display:block;color:#07395d}.stat span{font-weight:700}
-.card{background:white;border-radius:14px;margin-top:22px;box-shadow:0 6px 20px #17344b18;overflow:hidden}.title{background:#07395d;color:white;padding:16px 20px;font-size:20px;font-weight:800}
-.form{display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:12px;padding:20px}.form input,.form select,.search input{width:100%;padding:13px;border:1px solid #ccd8e2;border-radius:8px;font-size:15px}.btn{border:0;border-radius:8px;padding:13px 18px;font-weight:800;cursor:pointer}.add{background:#16a05d;color:white}.orange{background:#ff8a00;color:white}.danger{background:#e63946;color:white}.blue{background:#1377d5;color:white}
-.toolbar{display:flex;gap:10px;justify-content:space-between;align-items:center;padding:14px 18px;background:#ff8a00}.search{display:flex;gap:8px;flex:1;max-width:430px}.actions{display:flex;gap:8px}
-table{width:100%;border-collapse:collapse}th,td{padding:13px 14px;border-bottom:1px solid #e2e9ef;text-align:left}th{background:#07395d;color:white}tr:hover td{background:#f7fbfe}.row-actions{display:flex;gap:7px}
-footer{margin-top:35px;background:#062d4d;color:white;text-align:center;padding:30px}
-.modal{display:none;position:fixed;inset:0;background:#0008;align-items:center;justify-content:center;z-index:20}.modal-box{background:white;border-radius:14px;padding:25px;width:min(420px,92%)}.modal-box h2{margin-top:0}.modal-box input,.modal-box select{width:100%;padding:12px;margin:7px 0 12px;border:1px solid #ccd8e2;border-radius:8px}
-@media(max-width:800px){.stats{grid-template-columns:repeat(2,1fr)}.form{grid-template-columns:1fr}.hero h1{font-size:34px}.hero-badge{font-size:45px}.toolbar{flex-direction:column;align-items:stretch}.actions{flex-wrap:wrap}.search{max-width:none}table{font-size:13px}}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#eef2f7;color:#172033}
+header{background:linear-gradient(135deg,#111827,#1d4ed8);color:#fff;padding:18px;text-align:center}
+header h1{margin:0;font-size:25px}header p{margin:6px 0;opacity:.85}
+.wrap{max-width:1100px;margin:auto;padding:12px}.card{background:#fff;border-radius:16px;padding:16px;margin:12px 0;box-shadow:0 5px 18px #0001}
+input,select,button{width:100%;padding:12px;margin:5px 0;border:1px solid #d7dce5;border-radius:10px;font-size:15px}
+button{background:#2563eb;color:#fff;border:0;font-weight:700}.green{background:#16a34a}.red{background:#dc2626}.dark{background:#111827}
+nav{display:flex;gap:7px;overflow:auto;padding:8px 0;position:sticky;top:0;background:#eef2f7;z-index:4}nav button{min-width:105px}
+.hidden{display:none}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px}
+.videos{display:grid;grid-template-columns:2fr 1fr 1fr;gap:8px}.cam{background:#0b1220;border-radius:12px;overflow:hidden;min-height:150px;position:relative}.cam.main{grid-row:span 2;min-height:315px}.cam video{width:100%;height:100%;object-fit:cover;display:block}.cam label{position:absolute;top:8px;left:8px;background:#dc2626;color:#fff;padding:5px 8px;border-radius:15px;font-size:11px}
+.scoreboard{background:linear-gradient(135deg,#111827,#1e40af);color:#fff;border-radius:18px;padding:20px;text-align:center}.teams{display:flex;justify-content:space-around;align-items:center}.score{font-size:52px;font-weight:800;margin:8px}.timer{font-size:28px}.live{display:inline-block;background:#dc2626;padding:5px 10px;border-radius:15px;font-size:12px}
+table{width:100%;border-collapse:collapse}th,td{padding:9px;border-bottom:1px solid #eee;text-align:center}.small{font-size:13px;color:#667085}
+@media(max-width:650px){.videos{grid-template-columns:1fr 1fr}.cam.main{grid-column:1/-1;grid-row:auto;min-height:230px}.cam{min-height:130px}}
 </style>
 </head>
 <body>
-<header>
-  <div class="logo">🏆 <span>KABADDI</span> TEAM MANAGER</div>
-  <nav>
-    <button class="active">Home</button><button onclick="focusPlayers()">Players</button><button onclick="alert('Team Manager\\nManage player names, jersey numbers and sizes.')">Team</button>
-  </nav>
-</header>
+<header><h1 id="title">🏆 KABADDI TOURNAMENT LIVE</h1><p>🔴 Live Video • Live Score • Teams • Results</p></header>
+<div class="wrap">
+<nav>
+<button onclick="page('setup')">⚙️ Setup</button><button onclick="page('live')">🔴 Live</button>
+<button onclick="page('teams')">👥 Teams</button><button onclick="page('matches')">📅 Matches</button>
+<button onclick="page('points')">📊 Points</button>
+</nav>
 
-<section class="hero">
-  <div><h1>Kabaddi Team Manager</h1><p>ONE TEAM &nbsp;|&nbsp; ONE SPIRIT &nbsp;|&nbsp; ONE GOAL</p></div>
-  <div class="hero-badge">🤼‍♂️</div>
+<section id="setup">
+<div class="card"><h2>🏆 Tournament Setup</h2>
+<input id="name" placeholder="Tournament Name"><input id="village" placeholder="ಊರು / Village">
+<input id="venue" placeholder="Venue / ಮೈದಾನ"><input id="date" type="date">
+<input id="organizer" placeholder="Organizer Name"><input id="phone" placeholder="Contact Number">
+<input id="p1" placeholder="1st Prize ₹"><input id="p2" placeholder="2nd Prize ₹"><input id="p3" placeholder="3rd Prize ₹">
+<button onclick="saveSetup()">💾 Save & Start</button>
+</div>
+<div class="card"><h3>📱 Camera instructions</h3><p class="small">ಈ demoನಲ್ಲಿ ಪ್ರತಿ phone ತನ್ನ camera preview ತೋರಿಸುತ್ತದೆ. Public 4-phone streaming ಮಾಡಲು WebRTC media server ಅಥವಾ YouTube/RTMP service ಅಗತ್ಯ.</p></div>
 </section>
 
-<main class="container">
-  <section class="stats">
-    <div class="stat"><b id="total">0</b><span>Total Players</span></div>
-    <div class="stat"><b id="jerseys">0</b><span>Jerseys Issued</span></div>
-    <div class="stat"><b id="sizes">0</b><span>Sizes Used</span></div>
-    <div class="stat"><b id="ready">0%</b><span>Team Ready</span></div>
-  </section>
-
-  <section class="card">
-    <div class="title">👤 Add New Player</div>
-    <form class="form" id="playerForm">
-      <input id="name" placeholder="Player Name" required>
-      <input id="jersey" type="number" min="1" placeholder="Jersey Number" required>
-      <select id="size" required><option value="">Select Size</option><option>S</option><option>M</option><option>L</option><option>XL</option><option>XXL</option></select>
-      <button class="btn add" type="submit">＋ Add Player</button>
-    </form>
-  </section>
-
-  <section class="card" id="players">
-    <div class="toolbar">
-      <strong style="font-size:20px">☷ Player List</strong>
-      <div class="search"><input id="search" placeholder="Search by name or jersey number"><button class="btn blue" onclick="render()">Search</button></div>
-      <div class="actions"><button class="btn blue" onclick="exportCSV()">Export Excel</button><button class="btn" style="background:#e63946;color:white" onclick="window.print()">🖨 Print</button></div>
-    </div>
-    <div style="overflow:auto">
-      <table><thead><tr><th>#</th><th>Player Name</th><th>Jersey Number</th><th>Size</th><th>Actions</th></tr></thead><tbody id="list"></tbody></table>
-    </div>
-  </section>
-</main>
-
-<footer><div style="font-size:24px;font-weight:900">KABADDI • TEAMWORK • DISCIPLINE • RESPECT</div><p>© 2026 Kabaddi Team Manager</p></footer>
-
-<div class="modal" id="modal"><div class="modal-box">
-  <h2>Edit Player</h2><input id="editName"><input id="editJersey" type="number"><select id="editSize"><option>S</option><option>M</option><option>L</option><option>XL</option><option>XXL</option></select>
-  <button class="btn add" onclick="saveEdit()">Save Changes</button> <button class="btn" onclick="closeModal()">Cancel</button>
+<section id="live" class="hidden">
+<div class="card"><h2>📺 4-Camera Live</h2>
+<div class="videos">
+<div class="cam main"><label>🔴 CAMERA 1 • MAIN</label><video id="v1" autoplay muted playsinline></video></div>
+<div class="cam"><label>CAMERA 2</label><video id="v2" autoplay muted playsinline></video></div>
+<div class="cam"><label>CAMERA 3</label><video id="v3" autoplay muted playsinline></video></div>
+<div class="cam"><label>CAMERA 4</label><video id="v4" autoplay muted playsinline></video></div>
+</div>
+<div class="grid" style="margin-top:8px">
+<button onclick="startCamera(1)">🎥 Start Camera 1</button><button onclick="startCamera(2)">🎥 Start Camera 2</button>
+<button onclick="startCamera(3)">🎥 Start Camera 3</button><button onclick="startCamera(4)">🎥 Start Camera 4</button>
 </div></div>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, query, orderBy, onSnapshot, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
-import { firebaseConfig } from "./firebase-config.js";
+<div class="scoreboard"><span class="live">🔴 LIVE MATCH</span>
+<div class="timer" id="timer">20:00</div><div class="teams">
+<div><h3 id="ta">TEAM A</h3><div class="score" id="sa">0</div></div><b>VS</b>
+<div><h3 id="tb">TEAM B</h3><div class="score" id="sb">0</div></div></div>
+</div>
+<div class="card"><h2>🎮 Score Control</h2><div class="grid">
+<div><button onclick="point('A',1)">TEAM A +1</button><button onclick="point('A',2)">TEAM A +2</button><button onclick="point('A',3)">TEAM A +3</button></div>
+<div><button onclick="point('B',1)">TEAM B +1</button><button onclick="point('B',2)">TEAM B +2</button><button onclick="point('B',3)">TEAM B +3</button></div>
+</div><button class="green" onclick="startTimer()">▶️ Start Timer</button><button class="dark" onclick="pauseTimer()">⏸️ Pause</button><button class="red" onclick="resetMatch()">🔄 Reset</button></div>
+</section>
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const playersRef = collection(db, "kabaddiPlayers");
-let players = [];
-let editIndex = -1;
+<section id="teams" class="hidden"><div class="card"><h2>👥 Teams</h2>
+<input id="team" placeholder="Team Name"><input id="capt" placeholder="Captain"><button onclick="addTeam()">➕ Add Team</button></div><div id="teamList"></div></section>
 
-async function loadPlayers() {
-  const snap = await getDocs(query(playersRef, orderBy("createdAt", "asc")));
-  players = snap.docs.map(d => ({ id:d.id, ...d.data() }));
-  render();
+<section id="matches" class="hidden"><div class="card"><h2>📅 Match Schedule</h2>
+<select id="ma"></select><select id="mb"></select><input id="md" type="datetime-local"><button onclick="addMatch()">➕ Add Match</button></div><div id="matchList"></div></section>
+
+<section id="points" class="hidden"><div class="card"><h2>📊 Points Table</h2><table><thead><tr><th>Team</th><th>P</th><th>W</th><th>L</th><th>Pts</th></tr></thead><tbody id="ptable"></tbody></table></div></section>
+</div>
+
+<script>
+let d=JSON.parse(localStorage.getItem("kabaddiLive")||'{"setup":{},"teams":[],"matches":[],"a":0,"b":0}');
+let sec=1200,timer=null,streams={};
+const save=()=>localStorage.setItem("kabaddiLive",JSON.stringify(d));
+function page(x){document.querySelectorAll("section").forEach(s=>s.classList.add("hidden"));document.getElementById(x).classList.remove("hidden");if(x==="teams")renderTeams();if(x==="matches")renderMatches();if(x==="points")renderPoints()}
+function saveSetup(){d.setup={name:name.value,village:village.value,venue:venue.value,date:date.value,organizer:organizer.value,phone:phone.value,p1:p1.value,p2:p2.value,p3:p3.value};title.textContent="🏆 "+(d.setup.name||"KABADDI TOURNAMENT LIVE");save();alert("Tournament saved!");page("live")}
+function addTeam(){if(!team.value.trim())return;d.teams.push({name:team.value,cap:capt.value,p:0,w:0,l:0,pts:0,players:[]});team.value="";capt.value="";save();renderTeams();selects()}
+function renderTeams(){teamList.innerHTML=d.teams.map((t,i)=>`<div class="card"><h3>👥 ${t.name}</h3><p>Captain: ${t.cap||"-"}</p><input id="pl${i}" placeholder="Player Name"><button onclick="addPlayer(${i})">➕ Add Player</button>${t.players.map(p=>`<p class="small">#${p.n||"-"} ${p.name}</p>`).join("")}</div>`).join("")}
+function addPlayer(i){let el=document.getElementById("pl"+i);if(el.value){d.teams[i].players.push({name:el.value});el.value="";save();renderTeams()}}
+function selects(){ma.innerHTML=mb.innerHTML=d.teams.map((t,i)=>`<option value="${i}">${t.name}</option>`).join("")}
+function addMatch(){if(ma.value===mb.value)return alert("Different teams select ಮಾಡಿ");d.matches.push({a:+ma.value,b:+mb.value,date:md.value,status:"Upcoming",sa:0,sb:0});save();renderMatches()}
+function renderMatches(){selects();matchList.innerHTML=d.matches.map((m,i)=>`<div class="card"><b>${d.teams[m.a]?.name}</b> vs <b>${d.teams[m.b]?.name}</b><p class="small">${m.date||"Date not set"} • ${m.status}</p><button onclick="liveMatch(${i})">🔴 Start Live</button></div>`).join("")}
+function liveMatch(i){let m=d.matches[i];ta.textContent=d.teams[m.a].name;tb.textContent=d.teams[m.b].name;d.a=m.sa;d.b=m.sb;updateScore();m.status="LIVE";save();page("live")}
+function point(t,n){d[t==="A"?"a":"b"]+=n;updateScore();save()}
+function updateScore(){sa.textContent=d.a;sb.textContent=d.b}
+function startTimer(){if(timer)return;timer=setInterval(()=>{if(sec<=0)return pauseTimer();sec--;timer.textContent=String(Math.floor(sec/60)).padStart(2,"0")+":"+String(sec%60).padStart(2,"0")},1000)}
+function pauseTimer(){clearInterval(timer);timer=null}
+function resetMatch(){pauseTimer();sec=1200;timer.textContent="20:00";d.a=d.b=0;updateScore();save()}
+async function startCamera(n){
+ try{if(streams[n])streams[n].getTracks().forEach(t=>t.stop());let s=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"},audio:true});streams[n]=s;document.getElementById("v"+n).srcObject=s}
+ catch(e){alert("Camera permission ಬೇಕು. HTTPS websiteನಲ್ಲಿ open ಮಾಡಿ.");}
 }
-function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-function render(){
- const q=document.getElementById('search').value.toLowerCase();
- const rows=players.filter(p=>String(p.name).toLowerCase().includes(q)||String(p.jersey).includes(q));
- document.getElementById('list').innerHTML=rows.length?rows.map((p,n)=>`<tr><td>${n+1}</td><td><b>${esc(p.name)}</b></td><td>${esc(p.jersey)}</td><td>${esc(p.size)}</td><td><div class="row-actions"><button class="btn blue" onclick="window.editPlayer('${p.id}')">✎</button><button class="btn danger" onclick="window.removePlayer('${p.id}')">🗑</button></div></td></tr>`).join(''):'<tr><td colspan="5" style="text-align:center;padding:35px">No players added yet.</td></tr>';
- document.getElementById('total').textContent=players.length;
- document.getElementById('jerseys').textContent=players.length;
- document.getElementById('sizes').textContent=new Set(players.map(p=>p.size)).size;
- document.getElementById('ready').textContent=players.length?'100%':'0%';
-}
-document.getElementById('playerForm').addEventListener('submit', async e=>{
- e.preventDefault();
- const playerName=document.getElementById('name').value.trim();
- const jerseyNumber=document.getElementById('jersey').value.trim();
- const playerSize=document.getElementById('size').value;
- if(!playerName||!jerseyNumber||!playerSize){alert('Please enter Player Name, Jersey Number and Size.');return;}
- if(players.some(p=>String(p.jersey)===String(jerseyNumber))){alert('This jersey number is already used.');return;}
- try{
-   await addDoc(playersRef,{name:playerName,jersey:jerseyNumber,size:playerSize,createdAt:Date.now()});
-   e.target.reset(); await loadPlayers(); alert(playerName+' added successfully!');
- }catch(err){alert('Database error. Please check Firebase setup.');console.error(err);}
-});
-window.removePlayer=async id=>{if(confirm('Delete this player?')){await deleteDoc(doc(db,'kabaddiPlayers',id));await loadPlayers();}};
-window.editPlayer=id=>{alert('Edit can be added after the shared database is connected.');};
-window.focusPlayers=()=>document.getElementById('players').scrollIntoView({behavior:'smooth'});
-window.exportCSV=()=>{let csv='Player Name,Jersey Number,Size\n'+players.map(p=>`"${String(p.name).replaceAll('"','""')}",${p.jersey},${p.size}`).join('\n');let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='kabaddi_players.csv';a.click()};
-loadPlayers();
+function renderPoints(){ptable.innerHTML=d.teams.map(t=>`<tr><td>${t.name}</td><td>${t.p}</td><td>${t.w}</td><td>${t.l}</td><td>${t.pts}</td></tr>`).join("")}
+title.textContent="🏆 "+(d.setup.name||"KABADDI TOURNAMENT LIVE");updateScore();renderTeams();selects();renderMatches();renderPoints();
 </script>
-</body>
-</html>
+</body></html>
