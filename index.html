@@ -397,19 +397,4 @@ function setStatus(message) {
 </script>
 
 </body>
-</html>    for(const p of room.remoteParticipants.values()){
-      for(const pub of p.trackPublications.values()) if(pub.isSubscribed && pub.track) attachTrack(pub.track,p,pub.source);
-    }
-    if(role==='camera'){
-      await room.localParticipant.setCameraEnabled(true);
-      await room.localParticipant.setMicrophoneEnabled(cam==='1');
-      document.getElementById('status').textContent='🔴 Camera '+cam+' is LIVE';
-    }
-  }catch(e){alert(e.message);btn.disabled=false}
-}
-function leaveRoom(){if(room)room.disconnect();location.reload()}
-function tick(){if(sec<=0){clearInterval(clock);return}sec--;document.getElementById('timer').textContent=String(Math.floor(sec/60)).padStart(2,'0')+':'+String(sec%60).padStart(2,'0')}
-clock=setInterval(tick,1000);
-</script>
-</body>
 </html>
