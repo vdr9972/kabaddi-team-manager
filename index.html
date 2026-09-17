@@ -1,397 +1,366 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Kabaddi Tournament Live</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kabaddi Camera</title>
 
-  <script src="https://cdn.jsdelivr.net/npm/livekit-client/dist/livekit-client.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/livekit-client/dist/livekit-client.umd.min.js"></script>
 
-  <style>
-    * { box-sizing: border-box; }
-
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #eef2f7;
-      color: #172033;
-    }
-
-    header {
-      background: linear-gradient(135deg,#071b3a,#245eea);
-      color: white;
-      text-align: center;
-      padding: 18px 10px;
-    }
-
-    header h2 {
-      margin: 0;
-    }
-
-    .container {
-      max-width: 900px;
-      margin: auto;
-      padding: 15px;
-    }
-
-    .card {
-      background: white;
-      border-radius: 14px;
-      padding: 15px;
-      margin-bottom: 15px;
-      box-shadow: 0 3px 12px #0001;
-    }
-
-    input, select, button {
-      width: 100%;
-      padding: 13px;
-      margin-top: 8px;
-      border-radius: 8px;
-      border: 1px solid #ddd;
-      font-size: 15px;
-    }
-
-    button {
-      background: #2563eb;
-      color: white;
-      border: 0;
-      font-weight: bold;
-    }
-
-    button.red { background: #dc2626; }
-    button.dark { background: #172033; }
-    button.green { background: #16a34a; }
-
-    .controls {
-      display: grid;
-      grid-template-columns: repeat(2,1fr);
-      gap: 8px;
-    }
-
-    .video-grid {
-      display: grid;
-      grid-template-columns: repeat(2,1fr);
-      gap: 10px;
-    }
-
-    video {
-      width: 100%;
-      background: #000;
-      border-radius: 12px;
-      min-height: 180px;
-      object-fit: cover;
-    }
-
-    .score {
-      display: grid;
-      grid-template-columns: 1fr 80px 1fr;
-      text-align: center;
-      align-items: center;
-      background: #071b3a;
-      color: white;
-      border-radius: 15px;
-      padding: 20px;
-    }
-
-    .score-number {
-      font-size: 48px;
-      font-weight: bold;
-    }
-
-    .status {
-      padding: 10px;
-      background: #f1f5f9;
-      border-radius: 8px;
-      margin-bottom: 10px;
-    }
-
-    @media(max-width:600px) {
-      .video-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-  </style>
+<style>
+body{
+  margin:0;
+  font-family:Arial;
+  background:#071a36;
+  color:white;
+}
+header{
+  padding:18px;
+  text-align:center;
+  background:#1765e8;
+}
+.box{
+  max-width:600px;
+  margin:15px auto;
+  padding:18px;
+  background:white;
+  color:#111;
+  border-radius:15px;
+}
+input,select,button{
+  width:100%;
+  padding:14px;
+  margin:7px 0;
+  box-sizing:border-box;
+  border-radius:9px;
+  border:1px solid #ccc;
+  font-size:16px;
+}
+button{
+  border:0;
+  background:#1765e8;
+  color:white;
+  font-weight:bold;
+}
+.green{background:#159447}
+.red{background:#d92323}
+.orange{background:#f28c00}
+video{
+  width:100%;
+  background:#000;
+  border-radius:12px;
+  margin-top:10px;
+}
+.status{
+  text-align:center;
+  padding:10px;
+  font-weight:bold;
+}
+</style>
 </head>
 
 <body>
 
 <header>
-  <h2>🏆 KABADDI TOURNAMENT LIVE</h2>
-  <small>4-Camera WebRTC • Live Score</small>
+<h2>📹 KABADDI LIVE CAMERA</h2>
+<div>Camera Streaming</div>
 </header>
 
-<div class="container">
+<div class="box">
 
-  <div class="card">
-    <h3>🔴 Live Room</h3>
+<input
+ id="roomName"
+ value="kabaddi-live"
+ placeholder="Room Name">
 
-    <input id="roomName" placeholder="Room name">
+<select id="cameraNo">
+<option value="1">📹 CAMERA 1</option>
+<option value="2">📹 CAMERA 2</option>
+<option value="3">📹 CAMERA 3</option>
+<option value="4">📹 CAMERA 4</option>
+</select>
 
-    <select id="cameraNo">
-      <option value="1">📱 Camera 1</option>
-      <option value="2">📱 Camera 2</option>
-      <option value="3">📱 Camera 3</option>
-      <option value="4">📱 Camera 4</option>
-    </select>
+<button onclick="startCamera()">
+🔴 START LIVE CAMERA
+</button>
 
-    <button onclick="joinLive()">🎥 Join Live</button>
+<div id="status" class="status">
+🔴 NOT CONNECTED
+</div>
 
-    <div class="controls">
-      <button id="cameraBtn" onclick="toggleCamera()">📹 Camera ON</button>
-      <button id="micBtn" onclick="toggleMic()">🎤 Mic ON</button>
-      <button class="dark" onclick="switchCamera()">🔄 Switch Camera</button>
-      <button class="red" onclick="leaveLive()">⛔ Leave Live</button>
-    </div>
+<video id="localVideo"
+ autoplay
+ playsinline
+ muted>
+</video>
 
-    <div id="status" class="status">
-      Disconnected
-    </div>
-  </div>
+<button
+ class="green"
+ onclick="cameraOn()">
+📹 CAMERA ON
+</button>
 
-  <div class="card">
-    <div class="score">
-      <div>
-        TEAM A
-        <div id="scoreA" class="score-number">0</div>
-      </div>
+<button
+ class="red"
+ onclick="cameraOff()">
+⛔ CAMERA OFF
+</button>
 
-      <div>VS</div>
+<button
+ class="green"
+ onclick="micOn()">
+🎤 MIC ON
+</button>
 
-      <div>
-        TEAM B
-        <div id="scoreB" class="score-number">0</div>
-      </div>
-    </div>
-  </div>
+<button
+ class="red"
+ onclick="micOff()">
+🔇 MIC OFF
+</button>
 
-  <div class="card">
-    <h3>📺 Live Cameras</h3>
+<button
+ class="orange"
+ onclick="switchCamera()">
+🔄 SWITCH CAMERA
+</button>
 
-    <div class="video-grid">
-      <video id="video1" autoplay playsinline></video>
-      <video id="video2" autoplay playsinline></video>
-      <video id="video3" autoplay playsinline></video>
-      <video id="video4" autoplay playsinline></video>
-    </div>
-  </div>
+<button
+ class="red"
+ onclick="leaveLive()">
+🚪 LEAVE LIVE
+</button>
 
 </div>
 
 <script>
 
-const {
-  Room,
-  RoomEvent,
-  Track
-} = LivekitClient;
+let room=null;
+let videoPublication=null;
+let facingMode="environment";
 
-let room = null;
-let cameraEnabled = false;
-let micEnabled = false;
-let facingMode = "environment";
 
-async function joinLive() {
+async function startCamera(){
 
   const roomName =
-    document.getElementById("roomName").value.trim();
+    document.getElementById("roomName")
+    .value.trim();
 
   const cameraNo =
-    document.getElementById("cameraNo").value;
+    document.getElementById("cameraNo")
+    .value;
 
-  if (!roomName) {
-    alert("Room name ಹಾಕಿ");
+  if(!roomName){
+    alert("Room Name enter ಮಾಡಿ");
     return;
   }
 
-  try {
+  try{
 
-    setStatus("Connecting...");
+    const response =
+      await fetch("/api/token",{
 
-    const response = await fetch(
-      "/api/token",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
+        method:"POST",
+
+        headers:{
+          "Content-Type":
+          "application/json"
         },
-        body: JSON.stringify({
-          room_name: roomName,
-          camera_no: cameraNo,
-          role: "camera"
+
+        body:JSON.stringify({
+
+          room_name:roomName,
+
+          camera_no:cameraNo,
+
+          role:"camera"
+
         })
-      }
-    );
 
-    const contentType =
-      response.headers.get("content-type") || "";
+      });
 
-    if (!contentType.includes("application/json")) {
-      const text = await response.text();
+    const data =
+      await response.json();
+
+    if(!response.ok){
+
       throw new Error(
-        "Token server JSON ಬದಲು HTML ಕಳುಹಿಸಿದೆ."
+        data.error ||
+        "Token failed"
       );
+
     }
 
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(
-        data.error || "Token generation failed"
-      );
-    }
-
-    room = new Room();
-
-    room.on(
-      RoomEvent.TrackSubscribed,
-      (track) => {
-
-        if (track.kind !== Track.Kind.Video) return;
-
-        const video =
-          document.getElementById(
-            "video" + cameraNo
-          );
-
-        if (video) {
-          track.attach(video);
-        }
-      }
-    );
+    room =
+      new LivekitClient.Room();
 
     await room.connect(
       data.serverUrl,
       data.participantToken
     );
 
-    setStatus("🟢 Live Connected");
+    document.getElementById("status")
+      .innerText =
+      "🟢 CAMERA "+cameraNo+
+      " LIVE CONNECTED";
 
-    await room.localParticipant.setCameraEnabled(true);
+    await room.localParticipant
+      .setCameraEnabled(true);
 
-    cameraEnabled = true;
-
-    document.getElementById("cameraBtn").innerText =
-      "📹 Camera ON";
-
-  } catch (error) {
-
-    console.error(error);
-
-    setStatus("❌ " + error.message);
-
-    alert(error.message);
-  }
-}
-
-
-async function toggleCamera() {
-
-  if (!room) {
-    alert("ಮೊದಲು Join Live ಒತ್ತಿ");
-    return;
-  }
-
-  cameraEnabled = !cameraEnabled;
-
-  await room.localParticipant
-    .setCameraEnabled(cameraEnabled);
-
-  document.getElementById("cameraBtn").innerText =
-    cameraEnabled
-      ? "📹 Camera ON"
-      : "📷 Camera OFF";
-}
-
-
-async function toggleMic() {
-
-  if (!room) {
-    alert("ಮೊದಲು Join Live ಒತ್ತಿ");
-    return;
-  }
-
-  micEnabled = !micEnabled;
-
-  await room.localParticipant
-    .setMicrophoneEnabled(micEnabled);
-
-  document.getElementById("micBtn").innerText =
-    micEnabled
-      ? "🎤 Mic ON"
-      : "🔇 Mic OFF";
-}
-
-
-async function switchCamera() {
-
-  if (!room) {
-    alert("ಮೊದಲು Join Live ಒತ್ತಿ");
-    return;
-  }
-
-  try {
+    videoPublication =
+      room.localParticipant
+      .getTrackPublication(
+        LivekitClient.Track.Source.Camera
+      );
 
     const publication =
       room.localParticipant
-        .getTrackPublication(
-          Track.Source.Camera
+      .getTrackPublication(
+        LivekitClient.Track.Source.Camera
+      );
+
+    if(publication &&
+       publication.videoTrack){
+
+      publication.videoTrack
+        .attach(
+          document.getElementById(
+            "localVideo"
+          )
         );
 
-    if (!publication || !publication.videoTrack) {
-      alert("Camera ON ಮಾಡಿ ನಂತರ Switch Camera ಒತ್ತಿ");
-      return;
     }
 
-    facingMode =
-      facingMode === "environment"
-        ? "user"
-        : "environment";
+    /*
+      Camera 1 audio ON ಮಾಡಬಹುದು.
+      Camera 2-4 default MIC OFF.
+    */
 
-    await publication.videoTrack.restartTrack({
-      facingMode: facingMode
-    });
+    if(cameraNo === "1"){
 
-    setStatus(
-      facingMode === "environment"
-        ? "📷 Back Camera"
-        : "🤳 Front Camera"
+      await room.localParticipant
+        .setMicrophoneEnabled(true);
+
+    }else{
+
+      await room.localParticipant
+        .setMicrophoneEnabled(false);
+
+    }
+
+  }catch(error){
+
+    console.error(error);
+
+    document.getElementById("status")
+      .innerText =
+      "❌ "+error.message;
+
+  }
+
+}
+
+
+async function cameraOn(){
+
+  if(!room) return;
+
+  await room.localParticipant
+    .setCameraEnabled(true);
+
+}
+
+
+async function cameraOff(){
+
+  if(!room) return;
+
+  await room.localParticipant
+    .setCameraEnabled(false);
+
+}
+
+
+async function micOn(){
+
+  if(!room) return;
+
+  await room.localParticipant
+    .setMicrophoneEnabled(true);
+
+}
+
+
+async function micOff(){
+
+  if(!room) return;
+
+  await room.localParticipant
+    .setMicrophoneEnabled(false);
+
+}
+
+
+async function switchCamera(){
+
+  if(!room) return;
+
+  const publication =
+    room.localParticipant
+    .getTrackPublication(
+      LivekitClient.Track.Source.Camera
     );
 
-  } catch (error) {
+  if(!publication ||
+     !publication.videoTrack){
+
+    alert("Camera active ಇಲ್ಲ");
+    return;
+
+  }
+
+  facingMode =
+    facingMode === "environment"
+      ? "user"
+      : "environment";
+
+  try{
+
+    await publication.videoTrack
+      .restartTrack({
+        facingMode:facingMode
+      });
+
+  }catch(error){
 
     console.error(error);
 
     alert(
-      "Camera switch ಆಗಲಿಲ್ಲ: " +
-      error.message
+      "Camera switch ಆಗಲಿಲ್ಲ"
     );
+
   }
+
 }
 
 
-function leaveLive() {
+async function leaveLive(){
 
-  if (room) {
-    room.disconnect();
-    room = null;
+  if(room){
+
+    await room.disconnect();
+
+    room=null;
+
   }
 
-  cameraEnabled = false;
-  micEnabled = false;
+  document.getElementById("status")
+    .innerText =
+    "🔴 LIVE ENDED";
 
-  document.getElementById("cameraBtn").innerText =
-    "📹 Camera ON";
+  document.getElementById(
+    "localVideo"
+  ).srcObject=null;
 
-  document.getElementById("micBtn").innerText =
-    "🎤 Mic ON";
-
-  setStatus("Disconnected");
-}
-
-
-function setStatus(message) {
-  document.getElementById("status").innerText =
-    message;
 }
 
 </script>
