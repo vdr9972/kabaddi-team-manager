@@ -1,0 +1,7 @@
+{
+  "name":"kabaddi-live-webrtc",
+  "version":"1.0.0",
+  "private":true,
+  "type":"module",
+  "dependencies":{"livekit-server-sdk":"^2.19.0"}
+}
