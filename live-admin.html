@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kabaddi Live Admin</title>
+
+<script src="https://cdn.jsdelivr.net/npm/livekit-client/dist/livekit-client.umd.min.js"></script>
+
+<style>
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#071a36;
+  color:white;
+}
+header{
+  padding:16px;
+  text-align:center;
+  background:linear-gradient(135deg,#071a36,#1765e8);
+}
+.container{
+  max-width:1100px;
+  margin:auto;
+  padding:15px;
+}
+.panel{
+  background:white;
+  color:#111;
+  border-radius:16px;
+  padding:15px;
+  margin-bottom:15px;
+}
+input,button{
+  width:100%;
+  padding:13px;
+  margin:5px 0;
+  border-radius:9px;
+  border:1px solid #ccc;
+  font-size:16px;
+}
+button{
+  border:0;
+  background:#1765e8;
+  color:white;
+  font-weight:bold;
+  cursor:pointer;
+}
+.green{background:#159447}
+.red{background:#d92323}
+.orange{background:#f28c00}
+.dark{background:#071a36}
+
+.status{
+  text-align:center;
+  font-weight:bold;
+  padding:8px;
+}
+
+.camera-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+
+.camera-box{
+  position:relative;
+  background:#000;
+  min-height:220px;
+  border-radius:14px;
+  overflow:hidden;
+  cursor:pointer;
+}
+
+.camera-box.big{
+  grid-column:1 / -1;
+  min-height:500px;
+}
+
+.camera-box video{
+  width:100%;
+  height:100%;
+  min-height:220px;
+  object-fit:cover;
+  display:block;
+}
+
+.camera-title{
+  position:absolute;
+  top:10px;
+  left:10px;
+  z-index:5;
+  background:#d92323;
+  color:white;
+  padding:6px 10px;
+  border-radius:8px;
+  font-weight:bold;
+}
+
+.no-video{
+  height:220px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:#aaa;
+  font-size:20px;
+}
+
+.score{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+
+.team{
+  background:#071a36;
+  color:white;
+  padding:15px;
+  text-align:center;
+  border-radius:12px;
+}
+
+.points{
+  font-size:48px;
+  font-weight:bold;
+}
+
+.timer{
+  text-align:center;
+  font-size:48px;
+  font-weight:bold;
+  background:#111;
+  padding:15px;
+  border-radius:12px;
+  margin:12px 0;
+}
+
+.controls{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+}
+
+@media(max-width:650px){
+  .camera-grid{grid-template-columns:1fr}
+  .camera-box.big{grid-column:auto}
+  .score{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h2>🏆 KABADDI LIVE ADMIN</h2>
+  <div>Match Control Room</div>
+</header>
+
+<div class="container">
+
+<!-- CONNECTION -->
+<div class="panel">
+
+  <input id="roomName"
+         value="kabaddi-live"
+         placeholder="Room Name">
+
+  <button onclick="connectAdmin()">
+    🔗 CONNECT ADMIN
+  </button>
+
+  <div class="status" id="status">
+    🔴 NOT CONNECTED
+  </div>
+
+</div>
+
+<!-- CAMERAS -->
+<div class="panel">
+
+  <h3>📹 LIVE CAMERAS</h3>
+
+  <div class="camera-grid">
+
+    <div class="camera-box" id="box1" onclick="makeBig(1)">
+      <div class="camera-title">CAMERA 1</div>
+      <video id="video1" autoplay playsinline></video>
+      <div class="no-video" id="empty1">
+        Camera 1 Waiting...
+      </div>
+    </div>
+
+    <div class="camera-box" id="box2" onclick="makeBig(2)">
+      <div class="camera-title">CAMERA 2</div>
+      <video id="video2" autoplay playsinline></video>
+      <div class="no-video" id="empty2">
+        Camera 2 Waiting...
+      </div>
+    </div>
+
+    <div class="camera-box" id="box3" onclick="makeBig(3)">
+      <div class="camera-title">CAMERA 3</div>
+      <video id="video3" autoplay playsinline></video>
+      <div class="no-video" id="empty3">
+        Camera 3 Waiting...
+      </div>
+    </div>
+
+    <div class="camera-box" id="box4" onclick="makeBig(4)">
+      <div class="camera-title">CAMERA 4</div>
+      <video id="video4" autoplay playsinline></video>
+      <div class="no-video" id="empty4">
+        Camera 4 Waiting...
+      </div>
+    </div>
+
+  </div>
+
+  <button class="dark" onclick="showAllCameras()">
+    ▦ SHOW 4 CAMERAS
+  </button>
+
+</div>
+
+<!-- TEAM / SCORE -->
+<div class="panel">
+
+  <h3>🏆 MATCH SCORE</h3>
+
+  <input id="teamA"
+         value="TEAM A"
+         placeholder="Team A">
+
+  <input id="teamB"
+         value="TEAM B"
+         placeholder="Team B">
+
+  <button onclick="sendState()">
+    📢 UPDATE TEAM NAMES
+  </button>
+
+  <div class="score">
+
+    <div class="team">
+
+      <div id="teamALabel">TEAM A</div>
+
+      <div class="points" id="scoreA">
+        0
+      </div>
+
+      <button onclick="addScore('A',1)">
+        +1
+      </button>
+
+      <button onclick="addScore('A',2)">
+        +2
+      </button>
+
+      <button class="red" onclick="addScore('A',-1)">
+        −1
+      </button>
+
+    </div>
+
+    <div class="team">
+
+      <div id="teamBLabel">TEAM B</div>
+
+      <div class="points" id="scoreB">
+        0
+      </div>
+
+      <button onclick="addScore('B',1)">
+        +1
+      </button>
+
+      <button onclick="addScore('B',2)">
+        +2
+      </button>
+
+      <button class="red" onclick="addScore('B',-1)">
+        −1
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+<!-- TIMER -->
+<div class="panel">
+
+  <h3>⏱️ MATCH TIMER</h3>
+
+  <div class="timer" id="timer">
+    20:00
+  </div>
+
+  <div class="controls">
+
+    <button class="green" onclick="startTimer()">
+      ▶ START
+    </button>
+
+    <button class="orange" onclick="pauseTimer()">
+      ⏸ PAUSE
+    </button>
+
+  </div>
+
+  <button class="red" onclick="resetTimer()">
+    🔄 RESET 20:00
+  </button>
+
+</div>
+
+<!-- LIVE -->
+<div class="panel">
+
+  <h3>🔴 LIVE CONTROL</h3>
+
+  <button class="green" onclick="setLive(true)">
+    🔴 LIVE ON
+  </button>
+
+  <button class="red" onclick="setLive(false)">
+    ⛔ LIVE OFF
+  </button>
+
+</div>
+
+</div>
+
+<script>
+
+let room = null;
+
+let scoreA = 0;
+let scoreB = 0;
+
+let seconds = 1200;
+
+let timerRunning = false;
+let timerInterval = null;
+
+let live = false;
+
+
+/* CONNECT ADMIN */
+
+async function connectAdmin(){
+
+  const roomName =
+    document.getElementById("roomName")
+    .value.trim();
+
+  if(!roomName){
+    alert("Room name enter ಮಾಡಿ");
+    return;
+  }
+
+  try{
+
+    const response = await fetch("/api/token",{
+
+      method:"POST",
+
+      headers:{
+        "Content-Type":"application/json"
+      },
+
+      body:JSON.stringify({
+        room_name:roomName,
+        role:"admin"
+      })
+
+    });
+
+    const data = await response.json();
+
+    if(!response.ok){
+      throw new Error(
+        data.error || "Token failed"
+      );
+    }
+
+    room =
+      new LivekitClient.Room();
+
+    room.on(
+      LivekitClient.RoomEvent.TrackSubscribed,
+      (track,publication,participant)=>{
+
+        if(track.kind !== "video")
+          return;
+
+        const number =
+          getCameraNumber(participant.identity);
+
+        if(number){
+
+          const video =
+            document.getElementById(
+              "video"+number
+            );
+
+          const empty =
+            document.getElementById(
+              "empty"+number
+            );
+
+          track.attach(video);
+
+          empty.style.display="none";
+          video.style.display="block";
+        }
+
+      }
+    );
+
+    await room.connect(
+      data.serverUrl,
+      data.participantToken
+    );
+
+    document.getElementById("status")
+      .innerText =
+      "🟢 ADMIN CONNECTED";
+
+    sendState();
+
+  }catch(error){
+
+    console.error(error);
+
+    document.getElementById("status")
+      .innerText =
+      "❌ "+error.message;
+
+  }
+
+}
+
+
+/* FIND CAMERA NUMBER */
+
+function getCameraNumber(identity){
+
+  const match =
+    identity.match(/Camera[- ]?(\d+)/i);
+
+  return match
+    ? Number(match[1])
+    : null;
+
+}
+
+
+/* BIG CAMERA */
+
+function makeBig(number){
+
+  for(let i=1;i<=4;i++){
+
+    document
+      .getElementById("box"+i)
+      .classList.remove("big");
+
+  }
+
+  document
+    .getElementById("box"+number)
+    .classList.add("big");
+
+}
+
+
+/* SHOW FOUR */
+
+function showAllCameras(){
+
+  for(let i=1;i<=4;i++){
+
+    document
+      .getElementById("box"+i)
+      .classList.remove("big");
+
+  }
+
+}
+
+
+/* SEND MATCH STATE */
+
+async function sendState(){
+
+  if(!room)
+    return;
+
+  const state={
+
+    type:"match_state",
+
+    teamA:
+      document.getElementById("teamA").value,
+
+    teamB:
+      document.getElementById("teamB").value,
+
+    scoreA,
+    scoreB,
+
+    seconds,
+
+    running:timerRunning,
+
+    live
+
+  };
+
+  const data =
+    new TextEncoder()
+      .encode(JSON.stringify(state));
+
+  await room.localParticipant
+    .publishData(
+      data,
+      {
+        reliable:true,
+        topic:"match-state"
+      }
+    );
+
+  updateScreen();
+
+}
+
+
+/* SCORE */
+
+function addScore(team,points){
+
+  if(team==="A"){
+
+    scoreA =
+      Math.max(0,scoreA+points);
+
+  }else{
+
+    scoreB =
+      Math.max(0,scoreB+points);
+
+  }
+
+  sendState();
+
+}
+
+
+/* TIMER START */
+
+function startTimer(){
+
+  if(timerRunning)
+    return;
+
+  timerRunning=true;
+
+  timerInterval =
+    setInterval(()=>{
+
+      if(seconds>0){
+
+        seconds--;
+
+        sendState();
+
+      }else{
+
+        pauseTimer();
+
+      }
+
+    },1000);
+
+  sendState();
+
+}
+
+
+/* TIMER PAUSE */
+
+function pauseTimer(){
+
+  timerRunning=false;
+
+  clearInterval(timerInterval);
+
+  timerInterval=null;
+
+  sendState();
+
+}
+
+
+/* TIMER RESET */
+
+function resetTimer(){
+
+  pauseTimer();
+
+  seconds=1200;
+
+  sendState();
+
+}
+
+
+/* LIVE */
+
+function setLive(value){
+
+  live=value;
+
+  sendState();
+
+}
+
+
+/* UPDATE SCREEN */
+
+function updateScreen(){
+
+  document.getElementById("scoreA")
+    .innerText=scoreA;
+
+  document.getElementById("scoreB")
+    .innerText=scoreB;
+
+  document.getElementById("teamALabel")
+    .innerText=
+    document.getElementById("teamA").value;
+
+  document.getElementById("teamBLabel")
+    .innerText=
+    document.getElementById("teamB").value;
+
+  const min =
+    Math.floor(seconds/60);
+
+  const sec =
+    String(seconds%60)
+      .padStart(2,"0");
+
+  document.getElementById("timer")
+    .innerText=
+    `${min}:${sec}`;
+
+}
+
+
+updateScreen();
+
+</script>
+
+</body>
+</html>
