@@ -1,4 +1,4 @@
-import { AccessToken, TrackSource } from "livekit-server-sdk";
+import { AccessToken } from "livekit-server-sdk";
 import crypto from "crypto";
 
 export default async function handler(req, res) {
@@ -20,7 +20,9 @@ export default async function handler(req, res) {
     }
 
     const identity = crypto.randomUUID();
+
     const isCamera = role === "camera";
+    const isAdmin = role === "admin";
 
     const token = new AccessToken(
       process.env.LIVEKIT_API_KEY,
@@ -29,7 +31,9 @@ export default async function handler(req, res) {
         identity,
         name: isCamera
           ? `Camera ${camera_no}`
-          : "Viewer",
+          : isAdmin
+            ? "Admin"
+            : "Viewer",
         ttl: "2h"
       }
     );
@@ -37,15 +41,15 @@ export default async function handler(req, res) {
     token.addGrant({
       roomJoin: true,
       room: room_name,
+
       canSubscribe: true,
+
       canPublish: isCamera,
-      canPublishData: true,
+
+      canPublishData: isCamera || isAdmin,
 
       canPublishSources: isCamera
-        ? [
-            TrackSource.CAMERA,
-            TrackSource.MICROPHONE
-          ]
+        ? ["camera", "microphone"]
         : []
     });
 
