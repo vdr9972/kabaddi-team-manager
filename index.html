@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="kn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kabaddi Tournament Live</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#eef2f7;color:#172033}
+header{background:linear-gradient(135deg,#111827,#1d4ed8);color:#fff;padding:18px;text-align:center}
+header h1{margin:0;font-size:25px}header p{margin:6px 0;opacity:.85}
+.wrap{max-width:1100px;margin:auto;padding:12px}.card{background:#fff;border-radius:16px;padding:16px;margin:12px 0;box-shadow:0 5px 18px #0001}
+input,select,button{width:100%;padding:12px;margin:5px 0;border:1px solid #d7dce5;border-radius:10px;font-size:15px}
+button{background:#2563eb;color:#fff;border:0;font-weight:700}.green{background:#16a34a}.red{background:#dc2626}.dark{background:#111827}
+nav{display:flex;gap:7px;overflow:auto;padding:8px 0;position:sticky;top:0;background:#eef2f7;z-index:4}nav button{min-width:105px}
+.hidden{display:none}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px}
+.videos{display:grid;grid-template-columns:2fr 1fr 1fr;gap:8px}.cam{background:#0b1220;border-radius:12px;overflow:hidden;min-height:150px;position:relative}.cam.main{grid-row:span 2;min-height:315px}.cam video{width:100%;height:100%;object-fit:cover;display:block}.cam label{position:absolute;top:8px;left:8px;background:#dc2626;color:#fff;padding:5px 8px;border-radius:15px;font-size:11px}
+.scoreboard{background:linear-gradient(135deg,#111827,#1e40af);color:#fff;border-radius:18px;padding:20px;text-align:center}.teams{display:flex;justify-content:space-around;align-items:center}.score{font-size:52px;font-weight:800;margin:8px}.timer{font-size:28px}.live{display:inline-block;background:#dc2626;padding:5px 10px;border-radius:15px;font-size:12px}
+table{width:100%;border-collapse:collapse}th,td{padding:9px;border-bottom:1px solid #eee;text-align:center}.small{font-size:13px;color:#667085}
+@media(max-width:650px){.videos{grid-template-columns:1fr 1fr}.cam.main{grid-column:1/-1;grid-row:auto;min-height:230px}.cam{min-height:130px}}
+</style>
+</head>
+<body>
+<header><h1 id="title">🏆 KABADDI TOURNAMENT LIVE</h1><p>🔴 Live Video • Live Score • Teams • Results</p></header>
+<div class="wrap">
+<nav>
+<button onclick="page('setup')">⚙️ Setup</button><button onclick="page('live')">🔴 Live</button>
+<button onclick="page('teams')">👥 Teams</button><button onclick="page('matches')">📅 Matches</button>
+<button onclick="page('points')">📊 Points</button>
+</nav>
+
+<section id="setup">
+<div class="card"><h2>🏆 Tournament Setup</h2>
+<input id="name" placeholder="Tournament Name"><input id="village" placeholder="ಊರು / Village">
+<input id="venue" placeholder="Venue / ಮೈದಾನ"><input id="date" type="date">
+<input id="organizer" placeholder="Organizer Name"><input id="phone" placeholder="Contact Number">
+<input id="p1" placeholder="1st Prize ₹"><input id="p2" placeholder="2nd Prize ₹"><input id="p3" placeholder="3rd Prize ₹">
+<button onclick="saveSetup()">💾 Save & Start</button>
+</div>
+<div class="card"><h3>📱 Camera instructions</h3><p class="small">ಈ demoನಲ್ಲಿ ಪ್ರತಿ phone ತನ್ನ camera preview ತೋರಿಸುತ್ತದೆ. Public 4-phone streaming ಮಾಡಲು WebRTC media server ಅಥವಾ YouTube/RTMP service ಅಗತ್ಯ.</p></div>
+</section>
+
+<section id="live" class="hidden">
+<div class="card"><h2>📺 4-Camera Live</h2>
+<div class="videos">
+<div class="cam main"><label>🔴 CAMERA 1 • MAIN</label><video id="v1" autoplay muted playsinline></video></div>
+<div class="cam"><label>CAMERA 2</label><video id="v2" autoplay muted playsinline></video></div>
+<div class="cam"><label>CAMERA 3</label><video id="v3" autoplay muted playsinline></video></div>
+<div class="cam"><label>CAMERA 4</label><video id="v4" autoplay muted playsinline></video></div>
+</div>
+<div class="grid" style="margin-top:8px">
+<button onclick="startCamera(1)">🎥 Start Camera 1</button><button onclick="startCamera(2)">🎥 Start Camera 2</button>
+<button onclick="startCamera(3)">🎥 Start Camera 3</button><button onclick="startCamera(4)">🎥 Start Camera 4</button>
+</div></div>
+
+<div class="scoreboard"><span class="live">🔴 LIVE MATCH</span>
+<div class="timer" id="timer">20:00</div><div class="teams">
+<div><h3 id="ta">TEAM A</h3><div class="score" id="sa">0</div></div><b>VS</b>
+<div><h3 id="tb">TEAM B</h3><div class="score" id="sb">0</div></div></div>
+</div>
+<div class="card"><h2>🎮 Score Control</h2><div class="grid">
+<div><button onclick="point('A',1)">TEAM A +1</button><button onclick="point('A',2)">TEAM A +2</button><button onclick="point('A',3)">TEAM A +3</button></div>
+<div><button onclick="point('B',1)">TEAM B +1</button><button onclick="point('B',2)">TEAM B +2</button><button onclick="point('B',3)">TEAM B +3</button></div>
+</div><button class="green" onclick="startTimer()">▶️ Start Timer</button><button class="dark" onclick="pauseTimer()">⏸️ Pause</button><button class="red" onclick="resetMatch()">🔄 Reset</button></div>
+</section>
+
+<section id="teams" class="hidden"><div class="card"><h2>👥 Teams</h2>
+<input id="team" placeholder="Team Name"><input id="capt" placeholder="Captain"><button onclick="addTeam()">➕ Add Team</button></div><div id="teamList"></div></section>
+
+<section id="matches" class="hidden"><div class="card"><h2>📅 Match Schedule</h2>
+<select id="ma"></select><select id="mb"></select><input id="md" type="datetime-local"><button onclick="addMatch()">➕ Add Match</button></div><div id="matchList"></div></section>
+
+<section id="points" class="hidden"><div class="card"><h2>📊 Points Table</h2><table><thead><tr><th>Team</th><th>P</th><th>W</th><th>L</th><th>Pts</th></tr></thead><tbody id="ptable"></tbody></table></div></section>
+</div>
+
+<script>
+let d=JSON.parse(localStorage.getItem("kabaddiLive")||'{"setup":{},"teams":[],"matches":[],"a":0,"b":0}');
+let sec=1200,timer=null,streams={};
+const save=()=>localStorage.setItem("kabaddiLive",JSON.stringify(d));
+function page(x){document.querySelectorAll("section").forEach(s=>s.classList.add("hidden"));document.getElementById(x).classList.remove("hidden");if(x==="teams")renderTeams();if(x==="matches")renderMatches();if(x==="points")renderPoints()}
+function saveSetup(){d.setup={name:name.value,village:village.value,venue:venue.value,date:date.value,organizer:organizer.value,phone:phone.value,p1:p1.value,p2:p2.value,p3:p3.value};title.textContent="🏆 "+(d.setup.name||"KABADDI TOURNAMENT LIVE");save();alert("Tournament saved!");page("live")}
+function addTeam(){if(!team.value.trim())return;d.teams.push({name:team.value,cap:capt.value,p:0,w:0,l:0,pts:0,players:[]});team.value="";capt.value="";save();renderTeams();selects()}
+function renderTeams(){teamList.innerHTML=d.teams.map((t,i)=>`<div class="card"><h3>👥 ${t.name}</h3><p>Captain: ${t.cap||"-"}</p><input id="pl${i}" placeholder="Player Name"><button onclick="addPlayer(${i})">➕ Add Player</button>${t.players.map(p=>`<p class="small">#${p.n||"-"} ${p.name}</p>`).join("")}</div>`).join("")}
+function addPlayer(i){let el=document.getElementById("pl"+i);if(el.value){d.teams[i].players.push({name:el.value});el.value="";save();renderTeams()}}
+function selects(){ma.innerHTML=mb.innerHTML=d.teams.map((t,i)=>`<option value="${i}">${t.name}</option>`).join("")}
+function addMatch(){if(ma.value===mb.value)return alert("Different teams select ಮಾಡಿ");d.matches.push({a:+ma.value,b:+mb.value,date:md.value,status:"Upcoming",sa:0,sb:0});save();renderMatches()}
+function renderMatches(){selects();matchList.innerHTML=d.matches.map((m,i)=>`<div class="card"><b>${d.teams[m.a]?.name}</b> vs <b>${d.teams[m.b]?.name}</b><p class="small">${m.date||"Date not set"} • ${m.status}</p><button onclick="liveMatch(${i})">🔴 Start Live</button></div>`).join("")}
+function liveMatch(i){let m=d.matches[i];ta.textContent=d.teams[m.a].name;tb.textContent=d.teams[m.b].name;d.a=m.sa;d.b=m.sb;updateScore();m.status="LIVE";save();page("live")}
+function point(t,n){d[t==="A"?"a":"b"]+=n;updateScore();save()}
+function updateScore(){sa.textContent=d.a;sb.textContent=d.b}
+function startTimer(){if(timer)return;timer=setInterval(()=>{if(sec<=0)return pauseTimer();sec--;timer.textContent=String(Math.floor(sec/60)).padStart(2,"0")+":"+String(sec%60).padStart(2,"0")},1000)}
+function pauseTimer(){clearInterval(timer);timer=null}
+function resetMatch(){pauseTimer();sec=1200;timer.textContent="20:00";d.a=d.b=0;updateScore();save()}
+async function startCamera(n){
+ try{if(streams[n])streams[n].getTracks().forEach(t=>t.stop());let s=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"},audio:true});streams[n]=s;document.getElementById("v"+n).srcObject=s}
+ catch(e){alert("Camera permission ಬೇಕು. HTTPS websiteನಲ್ಲಿ open ಮಾಡಿ.");}
+}
+function renderPoints(){ptable.innerHTML=d.teams.map(t=>`<tr><td>${t.name}</td><td>${t.p}</td><td>${t.w}</td><td>${t.l}</td><td>${t.pts}</td></tr>`).join("")}
+title.textContent="🏆 "+(d.setup.name||"KABADDI TOURNAMENT LIVE");updateScore();renderTeams();selects();renderMatches();renderPoints();
+</script>
+</body></html>
