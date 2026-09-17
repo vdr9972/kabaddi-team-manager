@@ -1,112 +1,403 @@
-<!doctype html>
-<html lang="kn">
+<!DOCTYPE html>
+<html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Kabaddi Tournament Live</title>
-<script src="https://cdn.jsdelivr.net/npm/livekit-client/dist/livekit-client.umd.min.js"></script>
-<style>
-*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#eef2f7;color:#172033}
-header{background:linear-gradient(135deg,#111827,#1d4ed8);color:#fff;padding:18px;text-align:center}
-h1{margin:0;font-size:24px}header p{margin:6px 0;opacity:.85}
-.wrap{max-width:1100px;margin:auto;padding:12px}.card{background:#fff;border-radius:16px;padding:16px;margin:12px 0;box-shadow:0 5px 18px #0001}
-input,select,button{width:100%;padding:12px;margin:5px 0;border:1px solid #d7dce5;border-radius:10px;font-size:15px}
-button{background:#2563eb;color:#fff;border:0;font-weight:700}button:disabled{opacity:.55}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px}
-.video-grid{display:grid;grid-template-columns:2fr 1fr 1fr;gap:8px}.tile{background:#0b1220;border-radius:12px;min-height:150px;overflow:hidden;position:relative}
-.tile.main{grid-row:span 2;min-height:315px}.tile video{width:100%;height:100%;object-fit:cover;display:block}.tag{position:absolute;top:8px;left:8px;background:#dc2626;color:#fff;padding:5px 8px;border-radius:15px;font-size:11px;z-index:2}
-.status{padding:9px;border-radius:10px;background:#f1f5f9;margin:8px 0}.live{background:#dc2626;color:#fff;padding:5px 9px;border-radius:15px;font-size:12px}
-.score{background:linear-gradient(135deg,#111827,#1e40af);color:#fff;border-radius:18px;padding:18px;text-align:center}.teams{display:flex;justify-content:space-around;align-items:center}.big{font-size:50px;font-weight:800;margin:5px}.timer{font-size:27px}
-.small{font-size:13px;color:#667085}.danger{background:#dc2626}.dark{background:#111827}.green{background:#16a34a}
-@media(max-width:650px){.video-grid{grid-template-columns:1fr 1fr}.tile.main{grid-column:1/-1;grid-row:auto;min-height:230px}}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kabaddi Tournament Live</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/livekit-client/dist/livekit-client.umd.min.js"></script>
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #eef2f7;
+      color: #172033;
+    }
+
+    header {
+      background: linear-gradient(135deg,#071b3a,#245eea);
+      color: white;
+      text-align: center;
+      padding: 18px 10px;
+    }
+
+    header h2 {
+      margin: 0;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: auto;
+      padding: 15px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 14px;
+      padding: 15px;
+      margin-bottom: 15px;
+      box-shadow: 0 3px 12px #0001;
+    }
+
+    input, select, button {
+      width: 100%;
+      padding: 13px;
+      margin-top: 8px;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      font-size: 15px;
+    }
+
+    button {
+      background: #2563eb;
+      color: white;
+      border: 0;
+      font-weight: bold;
+    }
+
+    button.red { background: #dc2626; }
+    button.dark { background: #172033; }
+    button.green { background: #16a34a; }
+
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(2,1fr);
+      gap: 8px;
+    }
+
+    .video-grid {
+      display: grid;
+      grid-template-columns: repeat(2,1fr);
+      gap: 10px;
+    }
+
+    video {
+      width: 100%;
+      background: #000;
+      border-radius: 12px;
+      min-height: 180px;
+      object-fit: cover;
+    }
+
+    .score {
+      display: grid;
+      grid-template-columns: 1fr 80px 1fr;
+      text-align: center;
+      align-items: center;
+      background: #071b3a;
+      color: white;
+      border-radius: 15px;
+      padding: 20px;
+    }
+
+    .score-number {
+      font-size: 48px;
+      font-weight: bold;
+    }
+
+    .status {
+      padding: 10px;
+      background: #f1f5f9;
+      border-radius: 8px;
+      margin-bottom: 10px;
+    }
+
+    @media(max-width:600px) {
+      .video-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
 </head>
+
 <body>
-<header><h1>🏆 KABADDI TOURNAMENT LIVE</h1><p>4-Camera WebRTC • Live Score</p></header>
-<div class="wrap">
 
-<div class="card" id="joinCard">
-<h2>🔴 Live Room</h2>
-<input id="roomName" placeholder="Tournament / Room name">
-<select id="role">
-<option value="camera">📱 Camera</option>
-<option value="viewer">👥 Viewer</option>
-</select>
-<select id="cameraNo">
-<option value="1">Camera 1 • Main</option><option value="2">Camera 2 • Left</option>
-<option value="3">Camera 3 • Right</option><option value="4">Camera 4 • Score</option>
-</select>
-<button id="joinBtn" onclick="joinRoom()">🚀 Join Live</button>
-<p class="small">Camera phones: each phone selects a different camera number. Camera 1 publishes audio; Cameras 2–4 publish video only.</p>
-</div>
+<header>
+  <h2>🏆 KABADDI TOURNAMENT LIVE</h2>
+  <small>4-Camera WebRTC • Live Score</small>
+</header>
 
-<div class="card hidden" id="liveCard">
-<div class="status" id="status">Connecting...</div>
-<div class="video-grid" id="videoGrid"></div>
-</div>
+<div class="container">
 
-<div class="score">
-<span class="live">🔴 LIVE</span>
-<div class="timer" id="timer">20:00</div>
-<div class="teams"><div><b id="teamA">TEAM A</b><div class="big" id="scoreA">0</div></div><b>VS</b><div><b id="teamB">TEAM B</b><div class="big" id="scoreB">0</div></div></div>
-</div>
+  <div class="card">
+    <h3>🔴 Live Room</h3>
 
-<div class="card">
-<h3>🎮 Demo Live Score</h3>
-<div class="grid">
-<button onclick="addScore('A',1)">Team A +1</button><button onclick="addScore('B',1)">Team B +1</button>
-<button onclick="addScore('A',2)">Team A +2</button><button onclick="addScore('B',2)">Team B +2</button>
-</div>
-</div>
+    <input id="roomName" placeholder="Room name">
 
-<div class="card">
-<h3>⚠️ Important</h3>
-<p class="small">ಈ versionನಲ್ಲಿ video WebRTC ಮೂಲಕ LiveKit SFUಗೆ ಹೋಗುತ್ತದೆ. API secret browserನಲ್ಲಿ ಇರುವುದಿಲ್ಲ; token backendನಲ್ಲಿ generate ಆಗುತ್ತದೆ. Productionನಲ್ಲಿ admin authentication ಸೇರಿಸಿ.</p>
-<button class="danger" onclick="leaveRoom()">⏹ Leave Live</button>
-</div>
+    <select id="cameraNo">
+      <option value="1">📱 Camera 1</option>
+      <option value="2">📱 Camera 2</option>
+      <option value="3">📱 Camera 3</option>
+      <option value="4">📱 Camera 4</option>
+    </select>
+
+    <button onclick="joinLive()">🎥 Join Live</button>
+
+    <div class="controls">
+      <button id="cameraBtn" onclick="toggleCamera()">📹 Camera ON</button>
+      <button id="micBtn" onclick="toggleMic()">🎤 Mic ON</button>
+      <button class="dark" onclick="switchCamera()">🔄 Switch Camera</button>
+      <button class="red" onclick="leaveLive()">⛔ Leave Live</button>
+    </div>
+
+    <div id="status" class="status">
+      Disconnected
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="score">
+      <div>
+        TEAM A
+        <div id="scoreA" class="score-number">0</div>
+      </div>
+
+      <div>VS</div>
+
+      <div>
+        TEAM B
+        <div id="scoreB" class="score-number">0</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>📺 Live Cameras</h3>
+
+    <div class="video-grid">
+      <video id="video1" autoplay playsinline></video>
+      <video id="video2" autoplay playsinline></video>
+      <video id="video3" autoplay playsinline></video>
+      <video id="video4" autoplay playsinline></video>
+    </div>
+  </div>
+
 </div>
 
 <script>
-const {Room,RoomEvent,Track,createLocalVideoTrack}=LivekitClient;
-let room=null, scoreA=0,scoreB=0,sec=1200,clock=null;
 
-function addScore(t,n){if(t==='A'){scoreA+=n;document.getElementById('scoreA').textContent=scoreA}else{scoreB+=n;document.getElementById('scoreB').textContent=scoreB}}
+const {
+  Room,
+  RoomEvent,
+  Track
+} = LivekitClient;
 
-function tileFor(id,label,main=false){
-  let wrap=document.createElement('div');wrap.className='tile'+(main?' main':'');wrap.id='tile-'+id;
-  wrap.innerHTML='<span class="tag">'+label+'</span>';document.getElementById('videoGrid').appendChild(wrap);return wrap;
+let room = null;
+let cameraEnabled = false;
+let micEnabled = false;
+let facingMode = "environment";
+
+async function joinLive() {
+
+  const roomName =
+    document.getElementById("roomName").value.trim();
+
+  const cameraNo =
+    document.getElementById("cameraNo").value;
+
+  if (!roomName) {
+    alert("Room name ಹಾಕಿ");
+    return;
+  }
+
+  try {
+
+    setStatus("Connecting...");
+
+    const response = await fetch(
+      "/api/token",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          room_name: roomName,
+          camera_no: cameraNo,
+          role: "camera"
+        })
+      }
+    );
+
+    const contentType =
+      response.headers.get("content-type") || "";
+
+    if (!contentType.includes("application/json")) {
+      const text = await response.text();
+      throw new Error(
+        "Token server JSON ಬದಲು HTML ಕಳುಹಿಸಿದೆ."
+      );
+    }
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        data.error || "Token generation failed"
+      );
+    }
+
+    room = new Room();
+
+    room.on(
+      RoomEvent.TrackSubscribed,
+      (track) => {
+
+        if (track.kind !== Track.Kind.Video) return;
+
+        const video =
+          document.getElementById(
+            "video" + cameraNo
+          );
+
+        if (video) {
+          track.attach(video);
+        }
+      }
+    );
+
+    await room.connect(
+      data.serverUrl,
+      data.participantToken
+    );
+
+    setStatus("🟢 Live Connected");
+
+    await room.localParticipant.setCameraEnabled(true);
+
+    cameraEnabled = true;
+
+    document.getElementById("cameraBtn").innerText =
+      "📹 Camera ON";
+
+  } catch (error) {
+
+    console.error(error);
+
+    setStatus("❌ " + error.message);
+
+    alert(error.message);
+  }
 }
-function attachTrack(track,participant,source){
-  const id=participant.identity+'-'+source;
-  let old=document.getElementById('tile-'+id);if(old)old.remove();
-  let label=participant.name||participant.identity;
-  let main=/camera-1/i.test(label);
-  let tile=tileFor(id,label,main);
-  const el=track.attach();tile.appendChild(el);
+
+
+async function toggleCamera() {
+
+  if (!room) {
+    alert("ಮೊದಲು Join Live ಒತ್ತಿ");
+    return;
+  }
+
+  cameraEnabled = !cameraEnabled;
+
+  await room.localParticipant
+    .setCameraEnabled(cameraEnabled);
+
+  document.getElementById("cameraBtn").innerText =
+    cameraEnabled
+      ? "📹 Camera ON"
+      : "📷 Camera OFF";
 }
-function removeParticipant(participant){
-  document.querySelectorAll('[id^="tile-'+participant.identity+'-"]').forEach(x=>x.remove());
+
+
+async function toggleMic() {
+
+  if (!room) {
+    alert("ಮೊದಲು Join Live ಒತ್ತಿ");
+    return;
+  }
+
+  micEnabled = !micEnabled;
+
+  await room.localParticipant
+    .setMicrophoneEnabled(micEnabled);
+
+  document.getElementById("micBtn").innerText =
+    micEnabled
+      ? "🎤 Mic ON"
+      : "🔇 Mic OFF";
 }
-async function joinRoom(){
-  const roomName=document.getElementById('roomName').value.trim();
-  if(!roomName)return alert('Room name enter ಮಾಡಿ');
-  const role=document.getElementById('role').value;
-  const cam=document.getElementById('cameraNo').value;
-  if(role==='viewer')document.getElementById('cameraNo').disabled=true;
-  const btn=document.getElementById('joinBtn');btn.disabled=true;
-  try{
-    const r=await fetch('/api/token',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({room_name:roomName,role,camera_no:cam})});
-    const j=await r.json();if(!r.ok)throw new Error(j.error||'Token error');
-    room=new Room({adaptiveStream:true,dynacast:true});
-    room.on(RoomEvent.TrackSubscribed,(track,pub,p)=>attachTrack(track,p,pub.source));
-    room.on(RoomEvent.TrackUnsubscribed,(track,pub,p)=>{track.detach().forEach(e=>e.remove())});
-    room.on(RoomEvent.ParticipantDisconnected,p=>removeParticipant(p));
-    room.on(RoomEvent.Disconnected,()=>document.getElementById('status').textContent='Disconnected');
-    await room.connect(j.server_url,j.participant_token);
-    document.getElementById('joinCard').classList.add('hidden');
-    document.getElementById('liveCard').classList.remove('hidden');
-    document.getElementById('status').innerHTML='🟢 Connected • '+(role==='camera'?'Camera '+cam+' LIVE':'Viewer');
-    for(const p of room.remoteParticipants.values()){
+
+
+async function switchCamera() {
+
+  if (!room) {
+    alert("ಮೊದಲು Join Live ಒತ್ತಿ");
+    return;
+  }
+
+  try {
+
+    const publication =
+      room.localParticipant
+        .getTrackPublication(
+          Track.Source.Camera
+        );
+
+    if (!publication || !publication.videoTrack) {
+      alert("Camera ON ಮಾಡಿ ನಂತರ Switch Camera ಒತ್ತಿ");
+      return;
+    }
+
+    facingMode =
+      facingMode === "environment"
+        ? "user"
+        : "environment";
+
+    await publication.videoTrack.restartTrack({
+      facingMode: facingMode
+    });
+
+    setStatus(
+      facingMode === "environment"
+        ? "📷 Back Camera"
+        : "🤳 Front Camera"
+    );
+
+  } catch (error) {
+
+    console.error(error);
+
+    alert(
+      "Camera switch ಆಗಲಿಲ್ಲ: " +
+      error.message
+    );
+  }
+}
+
+
+function leaveLive() {
+
+  if (room) {
+    room.disconnect();
+    room = null;
+  }
+
+  cameraEnabled = false;
+  micEnabled = false;
+
+  document.getElementById("cameraBtn").innerText =
+    "📹 Camera ON";
+
+  document.getElementById("micBtn").innerText =
+    "🎤 Mic ON";
+
+  setStatus("Disconnected");
+}
+
+
+function setStatus(message) {
+  document.getElementById("status").innerText =
+    message;
+}
+
+</script>
+
+</body>
+</html>    for(const p of room.remoteParticipants.values()){
       for(const pub of p.trackPublications.values()) if(pub.isSubscribed && pub.track) attachTrack(pub.track,p,pub.source);
     }
     if(role==='camera'){
